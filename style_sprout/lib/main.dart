@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() {
   runApp(const StyleSproutApp());
@@ -16,7 +18,106 @@ class StyleSproutApp extends StatelessWidget {
   }
 }
 
-class StyleSproutHome extends StatelessWidget {
+class StyleSproutHome extends StatefulWidget {
+  @override
+  _StyleSproutHomeState createState() => _StyleSproutHomeState();
+}
+
+class _StyleSproutHomeState extends State<StyleSproutHome> {
+  String outfitResult = 'Style Sprout'; 
+
+  void showGenerateOutfitMenu(BuildContext context) {
+    String selectedOutfitType = 'casual'; // Default dropdown value
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+            side: const BorderSide(color: Colors.green, width: 2),
+          ),
+          title: const Text(
+            'Select Outfit Type',
+            style: TextStyle(
+              color: Color(0xFF1B5E20), 
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButton<String>(
+                    value: selectedOutfitType,
+                    isExpanded: true,
+                    style: const TextStyle(
+                      color: Color(0xFF1B5E20), 
+                      fontSize: 18,
+                    ),
+                    items: <String>['casual', 'athletic', 'formal']
+                        .map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedOutfitType = newValue!;
+                      });
+                    },
+                    dropdownColor: Colors.white,
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                generateOutfit(selectedOutfitType);
+                Navigator.of(context).pop(); 
+              },
+              child: const Text(
+                'Generate',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> generateOutfit(String usage) async {
+    final String url = 'http://ipaddress:8000/outfit/warm/$usage';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          outfitResult = "top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
+        });
+      } else {
+        setState(() {
+          outfitResult =
+              "Failed to fetch outfit. Status code: ${response.statusCode}";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        outfitResult = "generated $usage outfit";
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,7 +145,7 @@ class StyleSproutHome extends StatelessWidget {
                       size: 30,
                     ),
                     onPressed: () {
-                      // TODO: add action function for clicking settings button
+                      // TODO: Add action for settings button
                     },
                   ),
                 ],
@@ -52,7 +153,7 @@ class StyleSproutHome extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Placeholder
+            // Display outfit result or placeholder art  for aesthetics
             Expanded(
               child: Center(
                 child: Container(
@@ -62,13 +163,14 @@ class StyleSproutHome extends StatelessWidget {
                     color: Colors.green.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Text(
-                      'Style Sprout',
-                      style: TextStyle(
+                      outfitResult,
+                      style: const TextStyle(
                         color: Colors.green,
-                        fontSize: 30,
+                        fontSize: 15,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
@@ -85,7 +187,7 @@ class StyleSproutHome extends StatelessWidget {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: add  action function for generating outfits 
+                          showGenerateOutfitMenu(context); // Open popup menu
                         },
                         style: ElevatedButton.styleFrom(
                           shape: const CircleBorder(),
@@ -115,7 +217,7 @@ class StyleSproutHome extends StatelessWidget {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: add the action function for do laundry button action
+                          // TODO: Add the action function for the do laundry button
                         },
                         style: ElevatedButton.styleFrom(
                           shape: const CircleBorder(),
