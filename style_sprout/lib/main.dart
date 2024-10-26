@@ -120,6 +120,9 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
 
   @override
   Widget build(BuildContext context) {
+    double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    Size screenSize = MediaQuery.of(context).size;
+    double displayWidthInPixels = screenSize.width * devicePixelRatio;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -164,13 +167,11 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Center(
-                    child: Text(
-                      outfitResult,
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontSize: 15,
-                      ),
-                      textAlign: TextAlign.center,
+                    child:  Image(
+                      image: const AssetImage('assets/background.png'),
+                      width: displayWidthInPixels,
+                      height: displayWidthInPixels,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
