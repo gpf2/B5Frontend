@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart'; 
 import 'dart:convert';
 
 void main() {
@@ -25,6 +26,59 @@ class StyleSproutHome extends StatefulWidget {
 
 class _StyleSproutHomeState extends State<StyleSproutHome> {
   String outfitResult = 'Style Sprout'; 
+
+  void showSettingsMenu(BuildContext context) {
+    const String laundryMessage = "Uses Before Dirty";
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+            side: const BorderSide(color: Colors.green, width: 2),
+          ),
+          title: const Text(
+            'Settings',
+            style: TextStyle(
+              color: Color(0xFF1B5E20), 
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    decoration: const InputDecoration(labelText: laundryMessage),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.digitsOnly
+                    ], // Only numbers can be entered
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                //add something here
+              },
+              child: const Text(
+                'Change',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   void showGenerateOutfitMenu(BuildContext context) {
     String selectedOutfitType = 'casual'; // Default dropdown value
@@ -148,7 +202,7 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
                       size: 30,
                     ),
                     onPressed: () {
-                      // TODO: Add action for settings button
+                      showSettingsMenu(context);
                     },
                   ),
                 ],
