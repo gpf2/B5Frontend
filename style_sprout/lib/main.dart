@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart'; 
 import 'dart:convert';
+import 'dart:developer' as dev;
 
 void main() {
   runApp(const StyleSproutApp());
@@ -29,6 +30,7 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
 
   void showSettingsMenu(BuildContext context) {
     const String laundryMessage = "Uses Before Dirty";
+    int value = 0;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -55,6 +57,10 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
                     inputFormatters: <TextInputFormatter>[
                       FilteringTextInputFormatter.digitsOnly
                     ], // Only numbers can be entered
+                    onChanged: (String? newValue) {
+                      String temp = newValue!;
+                      value = int.parse(temp);
+                    }
                   ),
                 ],
               );
@@ -63,7 +69,7 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                //add something here
+                changeUses( value);
               },
               child: const Text(
                 'Change',
@@ -169,6 +175,15 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
       setState(() {
         outfitResult = "generated $usage outfit";
       });
+    }
+  }
+
+  Future<void> changeUses(int uses) async {
+    final String url = 'http://ipaddress:8000/laundry/$uses';
+    try {
+      http.post(Uri.parse(url));
+    } catch (e) {
+      dev.log("Successfully changed uses");
     }
   }
 
