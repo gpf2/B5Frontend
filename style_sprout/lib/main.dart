@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart'; 
 import 'dart:convert';
+import 'dart:developer' as dev;
 
 void main() {
   runApp(const StyleSproutApp());
@@ -24,10 +26,172 @@ class StyleSproutHome extends StatefulWidget {
 }
 
 class _StyleSproutHomeState extends State<StyleSproutHome> {
-  String outfitResult = 'Style Sprout';
+  String outfitResult = 'Style Sprout'; 
+
+  void showSettingsMenu(BuildContext context) {
+    const String laundryMessage = "Uses Before Dirty";
+    int value = 0;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+            side: const BorderSide(color: Colors.green, width: 2),
+          ),
+          title: const Text(
+            'Settings',
+            style: TextStyle(
+              color: Color(0xFF1B5E20), 
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    decoration: const InputDecoration(labelText: laundryMessage),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.digitsOnly
+                    ], // Only numbers can be entered
+                    onChanged: (String? newValue) {
+                      String temp = newValue!;
+                      value = int.parse(temp);
+                    }
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                changeUses( value);
+              },
+              child: const Text(
+                'Change',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  void showGenerateOutfitMenu(BuildContext context) {
+    String selectedOutfitType = 'casual'; // Default dropdown value
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+            side: const BorderSide(color: Colors.green, width: 2),
+          ),
+          title: const Text(
+            'Select Outfit Type',
+            style: TextStyle(
+              color: Color(0xFF1B5E20), 
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButton<String>(
+                    value: selectedOutfitType,
+                    isExpanded: true,
+                    style: const TextStyle(
+                      color: Color(0xFF1B5E20), 
+                      fontSize: 18,
+                    ),
+                    items: <String>['casual', 'athletic', 'formal']
+                        .map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedOutfitType = newValue!;
+                      });
+                    },
+                    dropdownColor: Colors.white,
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                generateOutfit(selectedOutfitType);
+                Navigator.of(context).pop(); 
+              },
+              child: const Text(
+                'Generate',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> generateOutfit(String usage) async {
+    final String url = 'http://ipaddress:8000/outfit/warm/$usage';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          outfitResult = "top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
+        });
+      } else {
+        setState(() {
+          outfitResult =
+              "Failed to fetch outfit. Status code: ${response.statusCode}";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        outfitResult = "generated $usage outfit";
+      });
+    }
+  }
+
+  Future<void> changeUses(int uses) async {
+    final String url = 'http://ipaddress:8000/laundry/$uses';
+    try {
+      http.post(Uri.parse(url));
+    } catch (e) {
+      dev.log("Successfully changed uses");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    Size screenSize = MediaQuery.of(context).size;
+    double displayWidthInPixels = screenSize.width * devicePixelRatio;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -53,7 +217,7 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
                       size: 30,
                     ),
                     onPressed: () {
-                      // TODO: Add action for settings button
+                      showSettingsMenu(context);
                     },
                   ),
                 ],
@@ -72,13 +236,11 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Center(
-                    child: Text(
-                      outfitResult,
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontSize: 15,
-                      ),
-                      textAlign: TextAlign.center,
+                    child:  Image(
+                      image: const AssetImage('assets/background.png'),
+                      width: displayWidthInPixels,
+                      height: displayWidthInPixels,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
