@@ -31,8 +31,8 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
   String outfitResult = 'Style Sprout'; 
 
   void showSettingsMenu(BuildContext context) {
-    const String laundryMessage = "Uses Before Dirty";
-    int value = 0;
+    const String laundryMessage = "Uses Before Dirty (1 to 100)";
+    int value = 1;
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -54,15 +54,20 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
-                    decoration: const InputDecoration(labelText: laundryMessage),
+                    decoration: const InputDecoration(
+                      labelText: laundryMessage
+                      ),
                     keyboardType: TextInputType.number,
                     inputFormatters: <TextInputFormatter>[
                       FilteringTextInputFormatter.digitsOnly
                     ], // Only numbers can be entered
                     onChanged: (String? newValue) {
-                      String temp = newValue!;
-                      value = int.parse(temp);
-                      dev.log(value.toString());
+                      if (newValue != null && newValue.isNotEmpty) {
+                        int temp = int.parse(newValue);
+                        if (temp>0 || temp<=100){
+                          value = temp;
+                        }
+                      }
                     }
                   ),
                 ],
@@ -182,12 +187,14 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
   }
 
   Future<void> changeUses(int uses) async {
+    /*
     final String url = 'http://ipaddress:8000/laundry/$uses';
     try {
       http.post(Uri.parse(url));
     } catch (e) {
-      dev.log("Successfully changed uses");
+      dev.log("Error changing uses");
     }
+    */
   }
 
   @override
