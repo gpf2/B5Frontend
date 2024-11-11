@@ -9,11 +9,11 @@ void main() {
 }
 
 class StyleSproutApp extends StatelessWidget {
-  const StyleSproutApp({Key? key}) : super(key: key);
+  const StyleSproutApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: StyleSproutHome(),
     );
@@ -21,6 +21,8 @@ class StyleSproutApp extends StatelessWidget {
 }
 
 class StyleSproutHome extends StatefulWidget {
+  const StyleSproutHome({super.key});
+
   @override
   _StyleSproutHomeState createState() => _StyleSproutHomeState();
 }
@@ -260,7 +262,7 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
                           // Navigate to Generate Outfit Page and get selected outfit if any
                           final selectedOutfit = await Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => GenerateOutfitPage()),
+                            MaterialPageRoute(builder: (context) => const GenerateOutfitPage()),
                           );
                           if (selectedOutfit != null) {
                             setState(() {
@@ -331,6 +333,8 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
 }
 
 class GenerateOutfitPage extends StatefulWidget {
+  const GenerateOutfitPage({super.key});
+
   @override
   _GenerateOutfitPageState createState() => _GenerateOutfitPageState();
 }
@@ -352,8 +356,8 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
         setState(() {
           generatedOutfit = "top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
     
-          topImageUrl = "assets/images/" + data["top"]["ImageUrl"] + ".jpg";
-          bottomImageUrl = "assets/images/" + data["bottom"]["ImageUrl"] + ".jpg";
+          topImageUrl = "${"assets/images/" + data["top"]["ImageUrl"]}.jpg";
+          bottomImageUrl = "${"assets/images/" + data["bottom"]["ImageUrl"]}.jpg";
         });
       } else {
         setState(() {
@@ -381,7 +385,7 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.home, color: Colors.green),
+          icon: const Icon(Icons.home, color: Colors.green),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -402,7 +406,7 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
             // Display generated outfit
             Expanded(
               child: Center(
-                child: Container(
+                child: SizedBox(
                   width: 250,
                   height: 500,
                   child: SingleChildScrollView(
