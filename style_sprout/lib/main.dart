@@ -389,6 +389,9 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
 
   @override
   Widget build(BuildContext context) {
+    double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    Size screenSize = MediaQuery.of(context).size;
+    double displayHeightInPixels = screenSize.height * devicePixelRatio;
     // Home button
     return Scaffold(
       backgroundColor: Colors.white,
@@ -424,18 +427,23 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
                     child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      //make height variable later
                       (jacketImageUrl != null && jacketImageUrl!="none")
-                          ? Image.asset(jacketImageUrl!)
-                          : Container(height: 80),
+                          ? Image(
+                            image: AssetImage (jacketImageUrl!),
+                            height: displayHeightInPixels/15,)
+                          : Container(height: 0),
                       const SizedBox(height: 10),
                       (topImageUrl != null && topImageUrl!="none")
-                          ? Image.asset(topImageUrl!)
-                          : Container(height: 80),
+                          ? Image(
+                            image: AssetImage (topImageUrl!),
+                            height: displayHeightInPixels/15,)
+                          : Container(height: 0),
                       const SizedBox(height: 10),
                       (bottomImageUrl != null && bottomImageUrl!="none")
-                          ? Image.asset(bottomImageUrl!)
-                          : Container(height: 80),
+                          ? Image(
+                            image: AssetImage (bottomImageUrl!),
+                            height: displayHeightInPixels/15,)
+                          : Container(height: 0),
                       const SizedBox(height: 10),
                       (topImageUrl == null || bottomImageUrl == null || bottomImageUrl == null) ||
                       (topImageUrl == "none" && bottomImageUrl == "none" && bottomImageUrl == "none")
