@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart'; 
 import 'dart:convert';
-import 'dart:developer' as dev;
 
 void main() {
   runApp(const StyleSproutApp());
@@ -352,6 +351,7 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
   String generatedOutfit = 'Generated outfit will appear here';
   String? topImageUrl;
   String? bottomImageUrl;
+  String? jacketImageUrl;
 
   Future<void> generateOutfit(String usage) async {
     final String url = 'http://ipaddress:8000/outfit/warm/$usage';
@@ -362,10 +362,11 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          generatedOutfit = "top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
+          generatedOutfit = "jacket: ${data["jacket"]} \n \n top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
     
           topImageUrl = "${"assets/images/" + data["top"]["ImageUrl"]}.jpg";
-          bottomImageUrl = "${"assets/images/" + data["bottom"]["ImageUrl"]}.jpg";
+          bottomImageUrl = data["bottom"] != 'undefined' ? "${"assets/images/" + data["bottom"]["ImageUrl"]}.jpg": "none";
+          jacketImageUrl = data["jacket"] != 'undefined' ? "${"assets/images/" + data["jacket"]["ImageUrl"]}.jpg": "none";
         });
       } else {
         setState(() {
@@ -373,6 +374,7 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
               "Failed to fetch outfit. Status code: ${response.statusCode}";
           topImageUrl = null;
           bottomImageUrl = null;
+          jacketImageUrl = null;
         });
       }
     } catch (e) {
@@ -380,6 +382,7 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
         generatedOutfit = "generated $usage outfit";
         topImageUrl = null;
         bottomImageUrl = null;
+        jacketImageUrl = null;
       });
     }
   }
@@ -421,15 +424,21 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
                     child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      topImageUrl != null
+                      //make height variable later
+                      (jacketImageUrl != null && jacketImageUrl!="none")
+                          ? Image.asset(jacketImageUrl!)
+                          : Container(height: 80),
+                      const SizedBox(height: 10),
+                      (topImageUrl != null && topImageUrl!="none")
                           ? Image.asset(topImageUrl!)
-                          : Container(height: 120),
+                          : Container(height: 80),
                       const SizedBox(height: 10),
-                      bottomImageUrl != null
+                      (bottomImageUrl != null && bottomImageUrl!="none")
                           ? Image.asset(bottomImageUrl!)
-                          : Container(height: 120),
+                          : Container(height: 80),
                       const SizedBox(height: 10),
-                      topImageUrl == null || bottomImageUrl == null
+                      (topImageUrl == null || bottomImageUrl == null || bottomImageUrl == null) ||
+                      (topImageUrl == "none" && bottomImageUrl == "none" && bottomImageUrl == "none")
                       ? Text(
                         generatedOutfit,
                         style: const TextStyle(
