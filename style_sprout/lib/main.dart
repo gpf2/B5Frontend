@@ -24,10 +24,10 @@ class StyleSproutHome extends StatefulWidget {
   const StyleSproutHome({super.key});
 
   @override
-  _StyleSproutHomeState createState() => _StyleSproutHomeState();
+  StyleSproutHomeState createState() => StyleSproutHomeState();
 }
 
-class _StyleSproutHomeState extends State<StyleSproutHome> {
+class StyleSproutHomeState extends State<StyleSproutHome> {
   String outfitResult = 'Style Sprout'; 
 
   void showSettingsMenu(BuildContext context) {
@@ -77,7 +77,7 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                changeUses( value);
+                changeUses(value);
               },
               child: const Text(
                 'Change',
@@ -93,108 +93,14 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
     );
   }
 
-
-  void showGenerateOutfitMenu(BuildContext context) {
-    String selectedOutfitType = 'casual'; // Default dropdown value
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-            side: const BorderSide(color: Colors.green, width: 2),
-          ),
-          title: const Text(
-            'Select Outfit Type',
-            style: TextStyle(
-              color: Color(0xFF1B5E20), 
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButton<String>(
-                    value: selectedOutfitType,
-                    isExpanded: true,
-                    style: const TextStyle(
-                      color: Color(0xFF1B5E20), 
-                      fontSize: 18,
-                    ),
-                    items: <String>['casual', 'athletic', 'formal']
-                        .map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedOutfitType = newValue!;
-                      });
-                    },
-                    dropdownColor: Colors.white,
-                  ),
-                ],
-              );
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                generateOutfit(selectedOutfitType);
-                Navigator.of(context).pop(); 
-              },
-              child: const Text(
-                'Generate',
-                style: TextStyle(
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> generateOutfit(String usage) async {
-    final String url = 'http://ipaddress:8000/outfit/warm/$usage';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          outfitResult = "top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
-        });
-      } else {
-        setState(() {
-          outfitResult =
-              "Failed to fetch outfit. Status code: ${response.statusCode}";
-        });
-      }
-    } catch (e) {
-      setState(() {
-        outfitResult = "generated $usage outfit";
-      });
-    }
-  }
-
   Future<void> changeUses(int uses) async {
-    /*
     final String url = 'http://ipaddress:8000/laundry/$uses';
     try {
       http.post(Uri.parse(url));
     } catch (e) {
       dev.log("Error changing uses");
     }
-    */
+    Navigator.pop(context);
   }
 
   @override
@@ -306,7 +212,12 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: Add the action function for the do laundry button
+                          const String url = 'http://ipaddress:8000/laundry/reset';
+                          try {
+                            http.post(Uri.parse(url));
+                          } catch (e) {
+                            dev.log("Error saving outfit");
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           shape: const CircleBorder(),
@@ -344,14 +255,15 @@ class GenerateOutfitPage extends StatefulWidget {
   const GenerateOutfitPage({super.key});
 
   @override
-  _GenerateOutfitPageState createState() => _GenerateOutfitPageState();
+  GenerateOutfitPageState createState() => GenerateOutfitPageState();
 }
 
-class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
+class GenerateOutfitPageState extends State<GenerateOutfitPage> {
   String selectedOutfitType = 'casual';
   String generatedOutfit = 'Generated outfit will appear here';
   String? topImageUrl;
   String? bottomImageUrl;
+  Map<String, dynamic>? outfitData;
 
   Future<void> generateOutfit(String usage) async {
     final String url = 'http://ipaddress:8000/outfit/warm/$usage';
@@ -363,9 +275,9 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
         final data = jsonDecode(response.body);
         setState(() {
           generatedOutfit = "top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
-    
-          topImageUrl = "${"assets/images/" + data["top"]["ImageUrl"]}.jpg";
-          bottomImageUrl = "${"assets/images/" + data["bottom"]["ImageUrl"]}.jpg";
+          topImageUrl = "assets/images/${data["top"]["ImageUrl"]}.jpg";
+          bottomImageUrl = "assets/images/${data["bottom"]["ImageUrl"]}.jpg";
+          outfitData = data;
         });
       } else {
         setState(() {
@@ -373,6 +285,7 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
               "Failed to fetch outfit. Status code: ${response.statusCode}";
           topImageUrl = null;
           bottomImageUrl = null;
+          outfitData = null;
         });
       }
     } catch (e) {
@@ -380,6 +293,7 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
         generatedOutfit = "generated $usage outfit";
         topImageUrl = null;
         bottomImageUrl = null;
+        outfitData = null;
       });
     }
   }
@@ -425,10 +339,12 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
                           ? Image.asset(topImageUrl!)
                           : Container(height: 120),
                       const SizedBox(height: 10),
+
                       bottomImageUrl != null
                           ? Image.asset(bottomImageUrl!)
                           : Container(height: 120),
                       const SizedBox(height: 10),
+
                       topImageUrl == null || bottomImageUrl == null
                       ? Text(
                         generatedOutfit,
@@ -457,6 +373,7 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
                       color: Color(0xFF1B5E20),
                       fontSize: 18,
                     ),
+
                     items: <String>['casual', 'athletic', 'formal']
                         .map((String value) {
                       return DropdownMenuItem<String>(
@@ -496,6 +413,16 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
                       ),
                       ElevatedButton(
                         onPressed: () {
+                          final String? primary = outfitData!["top"]["Color"];
+                          final String? secondary = outfitData!["bottom"]["Color"];
+                          final String itemId1 = outfitData!["top"]["ItemID"].toString();
+                          final String itemId2 = outfitData!["bottom"]["ItemID"].toString();
+                          final String url = 'http://ipaddress:8000/select/$primary/$secondary/$itemId1/$itemId2';
+                          try {
+                            http.post(Uri.parse(url));
+                          } catch (e) {
+                            dev.log("Error saving outfit");
+                          }
                           Navigator.pop(context, generatedOutfit); 
                         },
                         style: ElevatedButton.styleFrom(
