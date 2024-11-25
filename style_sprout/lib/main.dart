@@ -201,7 +201,7 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
                         style: TextStyle(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
-                          fontSize: 20,
+                          fontSize: 15,
                         ),
                       ),
                     ],
@@ -236,7 +236,38 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
                         style: TextStyle(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
-                          fontSize: 20,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () async {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ClosetPage()),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          shape: const CircleBorder(),
+                          padding: const EdgeInsets.all(24),
+                          backgroundColor: Colors.green,
+                        ),
+                        child: const Icon(
+                          Icons.checkroom,
+                          color: Colors.white,
+                          size: 40,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      const Text(
+                        'Closet',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
                         ),
                       ),
                     ],
@@ -468,6 +499,43 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class ClosetPage extends StatefulWidget {
+  const ClosetPage({super.key});
+
+  @override
+  ClosetPageState createState() => ClosetPageState();
+}
+
+class ClosetPageState extends State<ClosetPage> {
+
+  @override
+  Widget build(BuildContext context) {
+    // Home button
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.home, color: Colors.green),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        centerTitle: true,
+        title: const Text(
+          'Style Sprout',
+          style: TextStyle(
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+            color: Colors.green,
+          ),
         ),
       ),
     );
