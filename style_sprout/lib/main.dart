@@ -297,9 +297,10 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
   String? jacketImageUrl;
   String? overwearImageUrl;
   Map<String, dynamic>? outfitData;
+  int divisionAmount = 12;
 
   Future<void> generateOutfit(String usage) async {
-    final String url = 'http://ipaddress:8000/outfit/warm/$usage';
+    final String url = 'http://ipaddress:8000/outfit/Pittsburgh/$usage';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -308,13 +309,11 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
         final data = jsonDecode(response.body);
         setState(() {
           generatedOutfit = "jacket: ${data["jacket"]} \n \n top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
-    
-          topImageUrl = "${"assets/images/" + data["top"]["ImageUrl"]}.jpg";
-          bottomImageUrl = data["bottom"] != null ? "${"assets/images/" + data["bottom"]["ImageUrl"]}.jpg": "none";
-          jacketImageUrl = data["jacket"] != null ? "${"assets/images/" + data["jacket"]["ImageUrl"]}.jpg": "none";
-          overwearImageUrl = data["overwear"] != null ? "${"assets/images/" + data["overwear"]["ImageUrl"]}.jpg": "none";
+          topImageUrl = "assets/images/${data["top"]["ImageUrl"]}.jpg";
+          bottomImageUrl = data["bottom"] != null ? "assets/images/${data["bottom"]["ImageUrl"]}.jpg": "none";
+          jacketImageUrl = data["jacket"] != null ? "assets/images/${data["jacket"]["ImageUrl"]}.jpg": "none";
+          overwearImageUrl = data["overwear"] != null ? "assets/images/${data["overwear"]["ImageUrl"]}.jpg": "none";
           outfitData = data;
-
         });
       } else {
         setState(() {
@@ -339,169 +338,251 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
-    Size screenSize = MediaQuery.of(context).size;
-    double displayHeightInPixels = screenSize.height * devicePixelRatio;
-    double displayWidthInPixels = screenSize.width * devicePixelRatio;
-    // Home button
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.home, color: Colors.green),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        centerTitle: true,
-        title: const Text(
-          'Style Sprout',
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-            color: Colors.green,
-          ),
-        ),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Display generated outfit
-            Expanded(
-              child: Center(
-                child: SizedBox(
-                  width: displayWidthInPixels,
-                  height: displayHeightInPixels/3,
-                  child: SingleChildScrollView(
-                    child: GridView.count(
-                    shrinkWrap: true,
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 15,
-                    mainAxisSpacing: 15,
-                    children: [
-                      if(jacketImageUrl != null && jacketImageUrl!="none")
-                            Image(
-                            image: AssetImage (jacketImageUrl!),
-                            height: displayHeightInPixels/5,),
-                      if (overwearImageUrl != null && overwearImageUrl!="none")
-                            Image(
-                            image: AssetImage (overwearImageUrl!),
-                            height: displayHeightInPixels/10,),
-                      if (topImageUrl != null && topImageUrl!="none")
-                            Image(
-                            image: AssetImage (topImageUrl!),
-                            height: displayHeightInPixels/10,),
-                      if (bottomImageUrl != null && bottomImageUrl!="none")
-                            Image(
-                            image: AssetImage (bottomImageUrl!),
-                            height: displayHeightInPixels/10,),
-                      (topImageUrl == null) || (topImageUrl == "none")
-                      ? Text(
-                        generatedOutfit,
-                        style: const TextStyle(
-                          color: Colors.green,
-                          fontSize: 15,
-                        ),
-                        textAlign: TextAlign.center,
-                      ) : Container(height: 120),
-                      
-                    ],
-                  ),
-                ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 30.0),
-              child: Column(
-                children: [
-                  // Dropdown for Outfit Type
-                  DropdownButton<String>(
-                    value: selectedOutfitType,
-                    isExpanded: true,
-                    style: const TextStyle(
-                      color: Color(0xFF1B5E20),
-                      fontSize: 18,
-                    ),
+@override
+Widget build(BuildContext context) {
+  double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+  Size screenSize = MediaQuery.of(context).size;
+  double displayHeightInPixels = screenSize.height * devicePixelRatio;
 
-                    items: <String>['casual', 'athletic', 'formal']
-                        .map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedOutfitType = newValue!;
-                      });
-                    },
-                    dropdownColor: Colors.white,
-                  ),
-                  const SizedBox(height: 20),
+  // Get # of valid images
+  List<String?> validImages = [
+    jacketImageUrl,
+    overwearImageUrl,
+    topImageUrl,
+    bottomImageUrl
+  ].where((image) => image != null && image != "none").toList();
 
-                  // Generate Button & Select Outfit Button
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          generateOutfit(selectedOutfitType);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                          backgroundColor: Colors.green,
-                        ),
-                        child: const Text(
-                          'Generate',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          final String? primary = outfitData!["top"]["Color"];
-                          final String? secondary = outfitData!["bottom"]["Color"];
-                          final String itemId1 = outfitData!["top"]["ItemID"].toString();
-                          final String itemId2 = outfitData!["bottom"]["ItemID"].toString();
-                          final String url = 'http://ipaddress:8000/select/$primary/$secondary/$itemId1/$itemId2';
-                          try {
-                            http.post(Uri.parse(url));
-                          } catch (e) {
-                            dev.log("Error saving outfit");
-                          }
-                          Navigator.pop(context, generatedOutfit); 
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                          backgroundColor: Colors.green,
-                        ),
-                        child: const Text(
-                          'Select Outfit',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  // Get division amount based on # of valid images
+  int imageCount = validImages.length;
+  if (imageCount == 2) {
+    divisionAmount = 10;
+  } else if (imageCount == 3) {
+    divisionAmount = 12;
+  } else if (imageCount == 4) {
+    divisionAmount = 12; 
+  } else {
+    divisionAmount = 10; 
   }
+
+  return Scaffold(
+    backgroundColor: Colors.white,
+    appBar: AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.home, color: Colors.green),
+        onPressed: () {
+          Navigator.pop(context);
+        },
+      ),
+      centerTitle: true,
+      title: const Text(
+        'Style Sprout',
+        style: TextStyle(
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
+          color: Colors.green,
+        ),
+      ),
+    ),
+    body: SafeArea(
+      child: Column(
+        children: [
+          // Display generated outfit
+          Expanded(
+            child: Center(
+              child: SingleChildScrollView(
+                child: imageCount == 4
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Left column: Jacket & Overwear
+                          Column(
+                            children: [
+                              if (jacketImageUrl != null &&
+                                  jacketImageUrl != "none")
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 2),
+                                  child: Image(
+                                    image: AssetImage(jacketImageUrl!),
+                                    height: displayHeightInPixels / divisionAmount,
+                                  ),
+                                ),
+                              if (overwearImageUrl != null &&
+                                  overwearImageUrl != "none")
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 2),
+                                  child: Image(
+                                    image: AssetImage(overwearImageUrl!),
+                                    height: displayHeightInPixels / divisionAmount,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          // Right column: Top & Bottom
+                          Column(
+                            children: [
+                              if (topImageUrl != null && topImageUrl != "none")
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 2),
+                                  child: Image(
+                                    image: AssetImage(topImageUrl!),
+                                    height: displayHeightInPixels / divisionAmount,
+                                  ),
+                                ),
+                              if (bottomImageUrl != null &&
+                                  bottomImageUrl != "none")
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 2),
+                                  child: Image(
+                                    image: AssetImage(bottomImageUrl!),
+                                    height: displayHeightInPixels / divisionAmount,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          if (jacketImageUrl != null && jacketImageUrl != "none")
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Image(
+                                image: AssetImage(jacketImageUrl!),
+                                height: displayHeightInPixels / divisionAmount,
+                              ),
+                            ),
+                          if (overwearImageUrl != null &&
+                              overwearImageUrl != "none")
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Image(
+                                image: AssetImage(overwearImageUrl!),
+                                height: displayHeightInPixels / divisionAmount,
+                              ),
+                            ),
+                          if (topImageUrl != null && topImageUrl != "none")
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Image(
+                                image: AssetImage(topImageUrl!),
+                                height: displayHeightInPixels / divisionAmount,
+                              ),
+                            ),
+                          if (bottomImageUrl != null && bottomImageUrl != "none")
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Image(
+                                image: AssetImage(bottomImageUrl!),
+                                height: displayHeightInPixels / divisionAmount,
+                              ),
+                            ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 30.0),
+            child: Column(
+              children: [
+                // Dropdown for Outfit Type
+                DropdownButton<String>(
+                  value: selectedOutfitType,
+                  isExpanded: true,
+                  style: const TextStyle(
+                    color: Color(0xFF1B5E20),
+                    fontSize: 18,
+                  ),
+                  items: <String>['casual', 'athletic', 'formal']
+                      .map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedOutfitType = newValue!;
+                    });
+                  },
+                  dropdownColor: Colors.white,
+                ),
+                const SizedBox(height: 20),
+
+                // Generate Button & Select Outfit Button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        generateOutfit(selectedOutfitType);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 20),
+                        backgroundColor: Colors.green,
+                      ),
+                      child: const Text(
+                        'Generate',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        final String? primary = outfitData!["top"]["Color"];
+                        final String? secondary = outfitData!["bottom"] != null 
+                            ? outfitData!["bottom"]["Color"] 
+                            : primary;
+                        final String itemId1 = outfitData!["top"]["ItemID"].toString();
+                        final String itemId2 = outfitData!["bottom"] != null 
+                            ? outfitData!["bottom"]["ItemID"].toString() 
+                            : itemId1; 
+                        final String url =
+                            'http://ipaddress:8000/select/$primary/$secondary/$itemId1/$itemId2';
+                        try {
+                          http.post(Uri.parse(url));
+                        } catch (e) {
+                          dev.log("Error saving outfit");
+                        }
+                        Navigator.pop(context, generatedOutfit);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 20),
+                        backgroundColor: Colors.green,
+                      ),
+                      child: const Text(
+                        'Select Outfit',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 }
 
 class ClosetPage extends StatefulWidget {
