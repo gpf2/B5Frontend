@@ -309,10 +309,10 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
         final data = jsonDecode(response.body);
         setState(() {
           generatedOutfit = "jacket: ${data["jacket"]} \n \n top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
-          topImageUrl = "assets/images/${data["top"]["ImageUrl"]}.jpg";
-          bottomImageUrl = data["bottom"] != null ? "assets/images/${data["bottom"]["ImageUrl"]}.jpg": "none";
-          jacketImageUrl = data["jacket"] != null ? "assets/images/${data["jacket"]["ImageUrl"]}.jpg": "none";
-          overwearImageUrl = data["overwear"] != null ? "assets/images/${data["overwear"]["ImageUrl"]}.jpg": "none";
+          topImageUrl = data["top"]["URL"];
+          bottomImageUrl = data["bottom"] != null ? data["bottom"]["URL"] : "none";
+          jacketImageUrl = data["jacket"] != null ? data["jacket"]["URL"] : "none";
+          overwearImageUrl = data["overwear"] != null ? data["overwear"]["URL"] : "none";
           outfitData = data;
         });
       } else {
@@ -405,8 +405,8 @@ Widget build(BuildContext context) {
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 2),
-                                  child: Image(
-                                    image: AssetImage(jacketImageUrl!),
+                                  child: Image.network(
+                                    jacketImageUrl!,
                                     height: displayHeightInPixels / divisionAmount,
                                   ),
                                 ),
@@ -415,8 +415,8 @@ Widget build(BuildContext context) {
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 2),
-                                  child: Image(
-                                    image: AssetImage(overwearImageUrl!),
+                                  child: Image.network(
+                                    overwearImageUrl!,
                                     height: displayHeightInPixels / divisionAmount,
                                   ),
                                 ),
@@ -429,8 +429,8 @@ Widget build(BuildContext context) {
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 2),
-                                  child: Image(
-                                    image: AssetImage(topImageUrl!),
+                                  child: Image.network(
+                                    topImageUrl!,
                                     height: displayHeightInPixels / divisionAmount,
                                   ),
                                 ),
@@ -439,8 +439,8 @@ Widget build(BuildContext context) {
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 2),
-                                  child: Image(
-                                    image: AssetImage(bottomImageUrl!),
+                                  child: Image.network(
+                                    bottomImageUrl!,
                                     height: displayHeightInPixels / divisionAmount,
                                   ),
                                 ),
@@ -454,8 +454,8 @@ Widget build(BuildContext context) {
                           if (jacketImageUrl != null && jacketImageUrl != "none")
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Image(
-                                image: AssetImage(jacketImageUrl!),
+                              child: Image.network(
+                                jacketImageUrl!,
                                 height: displayHeightInPixels / divisionAmount,
                               ),
                             ),
@@ -463,24 +463,24 @@ Widget build(BuildContext context) {
                               overwearImageUrl != "none")
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Image(
-                                image: AssetImage(overwearImageUrl!),
+                              child: Image.network(
+                                overwearImageUrl!,
                                 height: displayHeightInPixels / divisionAmount,
                               ),
                             ),
                           if (topImageUrl != null && topImageUrl != "none")
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Image(
-                                image: AssetImage(topImageUrl!),
+                              child: Image.network(
+                                topImageUrl!,
                                 height: displayHeightInPixels / divisionAmount,
                               ),
                             ),
                           if (bottomImageUrl != null && bottomImageUrl != "none")
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Image(
-                                image: AssetImage(bottomImageUrl!),
+                              child: Image.network(
+                                bottomImageUrl!,
                                 height: displayHeightInPixels / divisionAmount,
                               ),
                             ),
