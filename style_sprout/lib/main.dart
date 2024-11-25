@@ -263,6 +263,8 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
   String generatedOutfit = 'Generated outfit will appear here';
   String? topImageUrl;
   String? bottomImageUrl;
+  String? jacketImageUrl;
+  String? overwearImageUrl;
   Map<String, dynamic>? outfitData;
 
   Future<void> generateOutfit(String usage) async {
@@ -274,10 +276,14 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          generatedOutfit = "top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
-          topImageUrl = "assets/images/${data["top"]["ImageUrl"]}.jpg";
-          bottomImageUrl = "assets/images/${data["bottom"]["ImageUrl"]}.jpg";
+          generatedOutfit = "jacket: ${data["jacket"]} \n \n top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
+    
+          topImageUrl = "${"assets/images/" + data["top"]["ImageUrl"]}.jpg";
+          bottomImageUrl = data["bottom"] != null ? "${"assets/images/" + data["bottom"]["ImageUrl"]}.jpg": "none";
+          jacketImageUrl = data["jacket"] != null ? "${"assets/images/" + data["jacket"]["ImageUrl"]}.jpg": "none";
+          overwearImageUrl = data["overwear"] != null ? "${"assets/images/" + data["overwear"]["ImageUrl"]}.jpg": "none";
           outfitData = data;
+
         });
       } else {
         setState(() {
@@ -285,6 +291,8 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
               "Failed to fetch outfit. Status code: ${response.statusCode}";
           topImageUrl = null;
           bottomImageUrl = null;
+          jacketImageUrl = null;
+          overwearImageUrl = null;
           outfitData = null;
         });
       }
@@ -293,6 +301,8 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
         generatedOutfit = "generated $usage outfit";
         topImageUrl = null;
         bottomImageUrl = null;
+        jacketImageUrl = null;
+        overwearImageUrl = null;
         outfitData = null;
       });
     }
@@ -300,6 +310,10 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
 
   @override
   Widget build(BuildContext context) {
+    double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    Size screenSize = MediaQuery.of(context).size;
+    double displayHeightInPixels = screenSize.height * devicePixelRatio;
+    double displayWidthInPixels = screenSize.width * devicePixelRatio;
     // Home button
     return Scaffold(
       backgroundColor: Colors.white,
@@ -329,23 +343,33 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
             Expanded(
               child: Center(
                 child: SizedBox(
-                  width: 250,
-                  height: 500,
+                  width: displayWidthInPixels,
+                  height: displayHeightInPixels/3,
                   child: SingleChildScrollView(
-                    child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    child: GridView.count(
+                    shrinkWrap: true,
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
                     children: [
-                      topImageUrl != null
-                          ? Image.asset(topImageUrl!)
-                          : Container(height: 120),
-                      const SizedBox(height: 10),
-
-                      bottomImageUrl != null
-                          ? Image.asset(bottomImageUrl!)
-                          : Container(height: 120),
-                      const SizedBox(height: 10),
-
-                      topImageUrl == null || bottomImageUrl == null
+                      if(jacketImageUrl != null && jacketImageUrl!="none")
+                            Image(
+                            image: AssetImage (jacketImageUrl!),
+                            height: displayHeightInPixels/5,),
+                      if (overwearImageUrl != null && overwearImageUrl!="none")
+                            Image(
+                            image: AssetImage (overwearImageUrl!),
+                            height: displayHeightInPixels/10,),
+                      if (topImageUrl != null && topImageUrl!="none")
+                            Image(
+                            image: AssetImage (topImageUrl!),
+                            height: displayHeightInPixels/10,),
+                      if (bottomImageUrl != null && bottomImageUrl!="none")
+                            Image(
+                            image: AssetImage (bottomImageUrl!),
+                            height: displayHeightInPixels/10,),
+                      (topImageUrl == null || bottomImageUrl == null || bottomImageUrl == null) ||
+                      (topImageUrl == "none" && bottomImageUrl == "none" && bottomImageUrl == "none")
                       ? Text(
                         generatedOutfit,
                         style: const TextStyle(
