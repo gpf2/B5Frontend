@@ -94,7 +94,7 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
   }
 
   Future<void> changeUses(int uses) async {
-    final String url = 'http://ipaddress:8000/laundry/$uses';
+    final String url = 'http://ipaddress:8000/laundry/update/$uses';
     try {
       http.post(Uri.parse(url));
     } catch (e) {
