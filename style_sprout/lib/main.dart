@@ -94,7 +94,7 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
   }
 
   Future<void> changeUses(int uses) async {
-    final String url = 'http://172.26.28.118:8000/laundry/update/$uses';
+    final String url = 'http://ipaddress:8000/laundry/update/$uses';
     try {
       http.post(Uri.parse(url));
     } catch (e) {
@@ -212,7 +212,7 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          const String url = 'http://172.26.28.118:8000/laundry/reset';
+                          const String url = 'http://ipaddress:8000/laundry/reset';
                           try {
                             http.post(Uri.parse(url));
                           } catch (e) {
@@ -300,7 +300,7 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
   int divisionAmount = 12;
 
   Future<void> generateOutfit(String usage) async {
-    final String url = 'http://172.26.28.118:8000/outfit/Pittsburgh/$usage';
+    final String url = 'http://ipaddress:8000/outfit/Pittsburgh/$usage';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -551,7 +551,7 @@ Widget build(BuildContext context) {
                             ? outfitData!["bottom"]["ItemID"].toString() 
                             : itemId1; 
                         final String url =
-                            'http://172.26.28.118:8000/select/$primary/$secondary/$itemId1/$itemId2';
+                            'http://ipaddress:8000/select/$primary/$secondary/$itemId1/$itemId2';
                         try {
                           http.post(Uri.parse(url));
                         } catch (e) {
@@ -599,7 +599,7 @@ class ClosetPageState extends State<ClosetPage> {
   String closetErrorMessage = '';
 
   Future<void> fetchImagePaths(int page) async {
-    final String url = 'http://172.26.28.118:8000/closet_images/$page';
+    final String url = 'http://ipaddress:8000/closet_images/$page';
 
     try {
       final response = await http.get(Uri.parse(url));
