@@ -680,7 +680,7 @@ class ClosetPageState extends State<ClosetPage> {
                   ),
                   itemCount: imagePaths.length,
                   itemBuilder: (context, index) {
-                    return Image.asset(
+                    return Image.network(
                       imagePaths[index],
                       fit: BoxFit.cover,
                     );
