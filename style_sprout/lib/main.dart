@@ -594,26 +594,35 @@ class ClosetPage extends StatefulWidget {
 
 class ClosetPageState extends State<ClosetPage> {
   int currentPage = 0;
+  List<String> imagePaths = [];
+  bool lastPage = false;
+  
 
-  List<String> fetchImagePaths(int page) {
-    if (page==0){
-      return ['assets/images/24.png',
-      'assets/images/63.png',
-      'assets/images/67.png',
-      'assets/images/79.png',
-      'assets/images/79.png',
-      'assets/images/79.png',];
+  Future<void> fetchImagePaths(int page) async {
+    final String url = 'http://ipaddress:8000/closet_images/$page';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          imagePaths = [];
+        });
+      } else {
+        setState(() {
+          imagePaths = [];
+        });
+      }
+    } catch (e) {
+      setState(() {
+        imagePaths = [];
+      });
     }
-    return ['assets/images/24.png',
-      'assets/images/63.png',
-      'assets/images/67.png',
-      'assets/images/79.png',
-      'assets/images/79.png',];
   }
 
   @override
   Widget build(BuildContext context) {
-    List<String> imagePaths = fetchImagePaths(currentPage);
     // Home button
     return Scaffold(
       backgroundColor: Colors.white,
@@ -654,7 +663,53 @@ class ClosetPageState extends State<ClosetPage> {
                   );
                 },
               ),
-            )
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    setState(() {
+                      if(currentPage>0){
+                        currentPage -= 1;
+                      }
+                      fetchImagePaths(currentPage);
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(24),
+                    backgroundColor: Colors.green,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    setState(() {
+                      if (!lastPage){
+                        currentPage += 1;
+                      }
+                      fetchImagePaths(currentPage);
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(24),
+                    backgroundColor: Colors.green,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 40),
           ]
         )
       )
