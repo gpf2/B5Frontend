@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart'; 
 import 'dart:convert';
+import 'dart:developer' as dev;
 
 void main() {
   runApp(const StyleSproutApp());
@@ -92,108 +93,13 @@ class _StyleSproutHomeState extends State<StyleSproutHome> {
     );
   }
 
-
-  void showGenerateOutfitMenu(BuildContext context) {
-    String selectedOutfitType = 'casual'; // Default dropdown value
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-            side: const BorderSide(color: Colors.green, width: 2),
-          ),
-          title: const Text(
-            'Select Outfit Type',
-            style: TextStyle(
-              color: Color(0xFF1B5E20), 
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButton<String>(
-                    value: selectedOutfitType,
-                    isExpanded: true,
-                    style: const TextStyle(
-                      color: Color(0xFF1B5E20), 
-                      fontSize: 18,
-                    ),
-                    items: <String>['casual', 'athletic', 'formal']
-                        .map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedOutfitType = newValue!;
-                      });
-                    },
-                    dropdownColor: Colors.white,
-                  ),
-                ],
-              );
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                generateOutfit(selectedOutfitType);
-                Navigator.of(context).pop(); 
-              },
-              child: const Text(
-                'Generate',
-                style: TextStyle(
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> generateOutfit(String usage) async {
-    final String url = 'http://ipaddress:8000/outfit/warm/$usage';
-
-    try {
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          outfitResult = "top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
-        });
-      } else {
-        setState(() {
-          outfitResult =
-              "Failed to fetch outfit. Status code: ${response.statusCode}";
-        });
-      }
-    } catch (e) {
-      setState(() {
-        outfitResult = "generated $usage outfit";
-      });
-    }
-  }
-
   Future<void> changeUses(int uses) async {
-    /*
     final String url = 'http://ipaddress:8000/laundry/$uses';
     try {
       http.post(Uri.parse(url));
     } catch (e) {
       dev.log("Error changing uses");
     }
-    */
   }
 
   @override
@@ -352,6 +258,7 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
   String? topImageUrl;
   String? bottomImageUrl;
   String? jacketImageUrl;
+  String? overwearImageUrl;
 
   Future<void> generateOutfit(String usage) async {
     final String url = 'http://ipaddress:8000/outfit/warm/$usage';
@@ -365,8 +272,10 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
           generatedOutfit = "jacket: ${data["jacket"]} \n \n top: ${data["top"]} \n \n bottom: ${data["bottom"]}";
     
           topImageUrl = "${"assets/images/" + data["top"]["ImageUrl"]}.jpg";
-          bottomImageUrl = data["bottom"] != 'undefined' ? "${"assets/images/" + data["bottom"]["ImageUrl"]}.jpg": "none";
-          jacketImageUrl = data["jacket"] != 'undefined' ? "${"assets/images/" + data["jacket"]["ImageUrl"]}.jpg": "none";
+          bottomImageUrl = data["bottom"] != null ? "${"assets/images/" + data["bottom"]["ImageUrl"]}.jpg": "none";
+          jacketImageUrl = data["jacket"] != null ? "${"assets/images/" + data["jacket"]["ImageUrl"]}.jpg": "none";
+          overwearImageUrl = data["overwear"] != null ? "${"assets/images/" + data["overwear"]["ImageUrl"]}.jpg": "none";
+
         });
       } else {
         setState(() {
@@ -375,6 +284,7 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
           topImageUrl = null;
           bottomImageUrl = null;
           jacketImageUrl = null;
+          overwearImageUrl = null;
         });
       }
     } catch (e) {
@@ -383,6 +293,11 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
         topImageUrl = null;
         bottomImageUrl = null;
         jacketImageUrl = null;
+        overwearImageUrl = null;
+        topImageUrl = 'assets/images/79.png';
+        bottomImageUrl = 'assets/images/63.png';
+        jacketImageUrl = 'assets/images/24.png';
+        overwearImageUrl = 'assets/images/67.png';
       });
     }
   }
@@ -392,6 +307,7 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
     double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
     Size screenSize = MediaQuery.of(context).size;
     double displayHeightInPixels = screenSize.height * devicePixelRatio;
+    double displayWidthInPixels = screenSize.width * devicePixelRatio;
     // Home button
     return Scaffold(
       backgroundColor: Colors.white,
@@ -421,30 +337,31 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
             Expanded(
               child: Center(
                 child: SizedBox(
-                  width: 250,
-                  height: 500,
+                  width: displayWidthInPixels,
+                  height: displayHeightInPixels/3,
                   child: SingleChildScrollView(
-                    child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    child: GridView.count(
+                    shrinkWrap: true,
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
                     children: [
-                      (jacketImageUrl != null && jacketImageUrl!="none")
-                          ? Image(
+                      if(jacketImageUrl != null && jacketImageUrl!="none")
+                            Image(
                             image: AssetImage (jacketImageUrl!),
-                            height: displayHeightInPixels/15,)
-                          : Container(height: 0),
-                      const SizedBox(height: 10),
-                      (topImageUrl != null && topImageUrl!="none")
-                          ? Image(
+                            height: displayHeightInPixels/5,),
+                      if (overwearImageUrl != null && overwearImageUrl!="none")
+                            Image(
+                            image: AssetImage (overwearImageUrl!),
+                            height: displayHeightInPixels/10,),
+                      if (topImageUrl != null && topImageUrl!="none")
+                            Image(
                             image: AssetImage (topImageUrl!),
-                            height: displayHeightInPixels/15,)
-                          : Container(height: 0),
-                      const SizedBox(height: 10),
-                      (bottomImageUrl != null && bottomImageUrl!="none")
-                          ? Image(
+                            height: displayHeightInPixels/10,),
+                      if (bottomImageUrl != null && bottomImageUrl!="none")
+                            Image(
                             image: AssetImage (bottomImageUrl!),
-                            height: displayHeightInPixels/15,)
-                          : Container(height: 0),
-                      const SizedBox(height: 10),
+                            height: displayHeightInPixels/10,),
                       (topImageUrl == null || bottomImageUrl == null || bottomImageUrl == null) ||
                       (topImageUrl == "none" && bottomImageUrl == "none" && bottomImageUrl == "none")
                       ? Text(
