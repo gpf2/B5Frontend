@@ -294,10 +294,6 @@ class _GenerateOutfitPageState extends State<GenerateOutfitPage> {
         bottomImageUrl = null;
         jacketImageUrl = null;
         overwearImageUrl = null;
-        topImageUrl = 'assets/images/79.png';
-        bottomImageUrl = 'assets/images/63.png';
-        jacketImageUrl = 'assets/images/24.png';
-        overwearImageUrl = 'assets/images/67.png';
       });
     }
   }
