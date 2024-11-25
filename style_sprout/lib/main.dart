@@ -94,7 +94,7 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
   }
 
   Future<void> changeUses(int uses) async {
-    final String url = 'http://ipaddress:8000/laundry/update/$uses';
+    final String url = 'http://172.26.28.118:8000/laundry/update/$uses';
     try {
       http.post(Uri.parse(url));
     } catch (e) {
@@ -212,7 +212,7 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          const String url = 'http://ipaddress:8000/laundry/reset';
+                          const String url = 'http://172.26.28.118:8000/laundry/reset';
                           try {
                             http.post(Uri.parse(url));
                           } catch (e) {
@@ -300,7 +300,7 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
   int divisionAmount = 12;
 
   Future<void> generateOutfit(String usage) async {
-    final String url = 'http://ipaddress:8000/outfit/Pittsburgh/$usage';
+    final String url = 'http://172.26.28.118:8000/outfit/Pittsburgh/$usage';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -551,7 +551,7 @@ Widget build(BuildContext context) {
                             ? outfitData!["bottom"]["ItemID"].toString() 
                             : itemId1; 
                         final String url =
-                            'http://ipaddress:8000/select/$primary/$secondary/$itemId1/$itemId2';
+                            'http://172.26.28.118:8000/select/$primary/$secondary/$itemId1/$itemId2';
                         try {
                           http.post(Uri.parse(url));
                         } catch (e) {
@@ -596,29 +596,43 @@ class ClosetPageState extends State<ClosetPage> {
   int currentPage = 0;
   List<String> imagePaths = [];
   bool lastPage = false;
-  
+  String closetErrorMessage = '';
 
   Future<void> fetchImagePaths(int page) async {
-    final String url = 'http://ipaddress:8000/closet_images/$page';
+    final String url = 'http://172.26.28.118:8000/closet_images/$page';
 
     try {
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
         setState(() {
-          imagePaths = [];
+          imagePaths = List<String>.from(data['urls']);
+          lastPage = data['last_page'] as bool;
+          closetErrorMessage = '';
         });
       } else {
         setState(() {
           imagePaths = [];
+          currentPage = 0;
+          int statusCode = response.statusCode;
+          closetErrorMessage = 'HTTP error encountered: $statusCode';
         });
       }
     } catch (e) {
+      dev.log(e.toString());
       setState(() {
         imagePaths = [];
+        currentPage = 0;
+        closetErrorMessage = e.toString();
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchImagePaths(currentPage);
   }
 
   @override
@@ -648,22 +662,31 @@ class ClosetPageState extends State<ClosetPage> {
       body: SafeArea(
         child: Column(
           children: [
-            Expanded(
-            child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10.0,
-                  mainAxisSpacing: 10.0,
+            if(closetErrorMessage!='')
+              Text(
+                '$closetErrorMessage',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
                 ),
-                itemCount: imagePaths.length,
-                itemBuilder: (context, index) {
-                  return Image.asset(
-                    imagePaths[index],
-                    fit: BoxFit.cover,
-                  );
-                },
               ),
-            ),
+            Expanded(
+              child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10.0,
+                    mainAxisSpacing: 10.0,
+                  ),
+                  itemCount: imagePaths.length,
+                  itemBuilder: (context, index) {
+                    return Image.asset(
+                      imagePaths[index],
+                      fit: BoxFit.cover,
+                    );
+                  },
+                ),
+              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
