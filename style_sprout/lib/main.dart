@@ -399,8 +399,7 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
                             Image(
                             image: AssetImage (bottomImageUrl!),
                             height: displayHeightInPixels/10,),
-                      (topImageUrl == null || bottomImageUrl == null || bottomImageUrl == null) ||
-                      (topImageUrl == "none" && bottomImageUrl == "none" && bottomImageUrl == "none")
+                      (topImageUrl == null) || (topImageUrl == "none")
                       ? Text(
                         generatedOutfit,
                         style: const TextStyle(
