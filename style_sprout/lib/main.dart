@@ -512,9 +512,27 @@ class ClosetPage extends StatefulWidget {
 }
 
 class ClosetPageState extends State<ClosetPage> {
+  int currentPage = 0;
+
+  List<String> fetchImagePaths(int page) {
+    if (page==0){
+      return ['assets/images/24.png',
+      'assets/images/63.png',
+      'assets/images/67.png',
+      'assets/images/79.png',
+      'assets/images/79.png',
+      'assets/images/79.png',];
+    }
+    return ['assets/images/24.png',
+      'assets/images/63.png',
+      'assets/images/67.png',
+      'assets/images/79.png',
+      'assets/images/79.png',];
+  }
 
   @override
   Widget build(BuildContext context) {
+    List<String> imagePaths = fetchImagePaths(currentPage);
     // Home button
     return Scaffold(
       backgroundColor: Colors.white,
@@ -537,6 +555,28 @@ class ClosetPageState extends State<ClosetPage> {
           ),
         ),
       ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+            child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10.0,
+                  mainAxisSpacing: 10.0,
+                ),
+                itemCount: imagePaths.length,
+                itemBuilder: (context, index) {
+                  return Image.asset(
+                    imagePaths[index],
+                    fit: BoxFit.cover,
+                  );
+                },
+              ),
+            )
+          ]
+        )
+      )
     );
   }
 }
