@@ -33,110 +33,110 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
   void showSettingsMenu(BuildContext context) {
     const String laundryMessage = "Uses Before Dirty (1 to 100)";
     const String locationMessage = "Select or Enter a Location";
+    String errorMessage = "";
     int value = 1;
     String selectedLocation = "Pittsburgh"; // default
-    String previousLocation = selectedLocation; // backup for failure
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15.0),
-            side: const BorderSide(color: Colors.green, width: 2),
-          ),
-          title: const Text(
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter dialogSetState){
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+                side: const BorderSide(color: Colors.green, width: 2),
+              ),
+            title: const Text(
             'Settings',
             style: TextStyle(
               color: Color(0xFF1B5E20), 
               fontWeight: FontWeight.bold,
             ),
-          ),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Uses Before Dirty input
-                  TextField(
-                    decoration: const InputDecoration(
-                      labelText: laundryMessage
-                      ),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.digitsOnly
-                    ], // Only numbers can be entered
-                    onChanged: (String? newValue) {
-                      if (newValue != null && newValue.isNotEmpty) {
-                        int temp = int.parse(newValue);
-                        if (temp>0 || temp<=100){
-                          value = temp;
-                        }
-                      }
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-                  // Location Input
-                  TextField(
-                    decoration: const InputDecoration(
-                      labelText: locationMessage,
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (errorMessage.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      errorMessage,
+                      style: const TextStyle(color: Colors.red),
                     ),
-                    onChanged: (String? newLocation) {
-                      if (newLocation != null && newLocation.isNotEmpty){
-                        setState(() {
-                          selectedLocation = newLocation;
-                        });
-                      }
-                    },
                   ),
-                ],
-              );
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () async {
-                bool success = await changeSettings(value, selectedLocation);
-                if (!success) {
-                  // Revert to previous location if new one is not valid
-                  setState(() {
-                    selectedLocation = previousLocation;
-                  });
-                } else {
-                  setState(() {
-                    previousLocation = selectedLocation;
-                  });
-                }
-              },
-              child: const Text(
-                'Change',
-                style: TextStyle(
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
+              // Uses before dirty input
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: laundryMessage
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly
+                ], // Only numbers can be entered
+                onChanged: (String? newValue) {
+                  if (newValue != null && newValue.isNotEmpty) {
+                    value = int.parse(newValue);                    
+                  }
+                },
+              ),
+              const SizedBox(height: 20),
+              // Location input
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: locationMessage,
+                ),
+                onChanged: (String? newLocation) {
+                  if (newLocation != null && newLocation.isNotEmpty){
+                    dialogSetState(() {
+                      selectedLocation = newLocation;
+                    });
+                  }
+                },
+              ),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () async {
+                  bool success = await changeSettings(value, selectedLocation);
+                  if (!success) {
+                    // Display error message
+                    dialogSetState(() {
+                      errorMessage = "Failed to update settings";
+                    });
+                  } else {
+                    // Close 
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text(
+                  "Change",
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+            );
+          },
         );
       },
     );
   }
 
   Future<bool> changeSettings(int uses, String location) async {
-    final String url = 'http://128.2.13.139:8000/settings/update/$uses/$location';
+    final String url = 'http://ipaddress:8000/settings/update/$uses/$location';
     try {
       final response = await http.post(Uri.parse(url));
       if (response.statusCode == 200) {
-        Navigator.pop(context);
         return true;
       } else {
         dev.log("Invalid location: $location");
-        Navigator.pop(context);
         return false;
       }
     } catch (e) {
       dev.log("Error changing uses/location");
-      Navigator.pop(context);
       return false;
     }
   }
@@ -250,7 +250,7 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          const String url = 'http://128.2.13.139:8000/laundry/reset';
+                          const String url = 'http://ipaddress:8000/laundry/reset';
                           try {
                             http.post(Uri.parse(url));
                           } catch (e) {
@@ -338,7 +338,7 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
   int divisionAmount = 12;
 
   Future<void> generateOutfit(String usage) async {
-    final String url = 'http://128.2.13.139:8000/outfit/$usage';
+    final String url = 'http://ipaddress:8000/outfit/$usage';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -595,7 +595,7 @@ Widget build(BuildContext context) {
                             ? outfitData!["jacket"]["ItemID"].toString()
                             : "-1";
                         final String url =
-                            'http://128.2.13.139:8000/select/$primary/$secondary/$itemId1/$itemId2/$itemId3/$itemId4';
+                            'http://ipaddress:8000/select/$primary/$secondary/$itemId1/$itemId2/$itemId3/$itemId4';
                         try {
                           http.post(Uri.parse(url));
                         } catch (e) {
@@ -646,7 +646,7 @@ class ClosetPageState extends State<ClosetPage> {
   List<String> labels = [];
 
   Future<void> fetchImagePaths(int page) async {
-    final String url = 'http://128.2.13.139:8000/closet_images/$page';
+    final String url = 'http://ipaddress:8000/closet_images/$page';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -680,7 +680,7 @@ class ClosetPageState extends State<ClosetPage> {
   }
 
   Future<void> updateLabel(String id, String usage, String color, int num_uses, String item_type) async {
-    final String url = 'http://128.2.13.139:8000/update/$id/$usage/$color/$num_uses/$item_type';
+    final String url = 'http://ipaddress:8000/update/$id/$usage/$color/$num_uses/$item_type';
     try {
       http.post(Uri.parse(url));
     } catch (e) {
@@ -689,7 +689,7 @@ class ClosetPageState extends State<ClosetPage> {
   }
 
   Future<List<String>> getLabels(String id) async {
-    final String url = 'http://128.2.13.139:8000/image_labels/$id';
+    final String url = 'http://ipaddress:8000/image_labels/$id';
 
     try {
       final response = await http.get(Uri.parse(url));
