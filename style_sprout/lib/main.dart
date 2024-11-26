@@ -502,7 +502,7 @@ Widget build(BuildContext context) {
                     color: Color(0xFF1B5E20),
                     fontSize: 18,
                   ),
-                  items: <String>['casual', 'athletic', 'formal']
+                  items: <String>['casual', 'formal']
                       .map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -597,6 +597,8 @@ class ClosetPageState extends State<ClosetPage> {
   List<String> imagePaths = [];
   bool lastPage = false;
   String closetErrorMessage = '';
+  String labelsErrorMessage = '';
+  List<String> labels = [];
 
   Future<void> fetchImagePaths(int page) async {
     final String url = 'http://ipaddress:8000/closet_images/$page';
@@ -629,11 +631,243 @@ class ClosetPageState extends State<ClosetPage> {
     }
   }
 
+  Future<void> updateLabel(String path, String newLabel, int type) async {
+    String newpath =path.replaceAll('/', '*');
+    final String url = 'http://ipaddress:8000/label_update/$newpath/$type/$newLabel';
+    try {
+      http.post(Uri.parse(url));
+    } catch (e) {
+      dev.log("Error updating label");
+    }
+  }
+
+  Future<List<String>> getLabels(String path) async {
+    String newpath =path.replaceAll('/', '*');
+    final String url = 'http://ipaddress:8000/image_labels/$newpath';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        setState(() {
+          labels = List<String>.from(data['labels']);
+          labelsErrorMessage = '';
+        });
+      } else {
+        setState(() {
+          labels = [];
+          int statusCode = response.statusCode;
+          labelsErrorMessage = 'HTTP error encountered: $statusCode';
+        });
+      }
+    } catch (e) {
+      dev.log(e.toString());
+      setState(() {
+        labels = [];
+        labelsErrorMessage = e.toString();
+      });
+    }
+    return labels;
+  }
+
   @override
   void initState() {
     super.initState();
     fetchImagePaths(currentPage);
   }
+
+  void showImagePopup(String imagePath) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return FutureBuilder<List<String>>(
+          future: getLabels(imagePath),
+          builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const AlertDialog(
+                title: Text('Loading...'),
+                content: CircularProgressIndicator(),
+              );
+            }
+            if (snapshot.hasError) {
+              return AlertDialog(
+                title: const Text('Error'),
+                content: Text('${snapshot.error}'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Close'),
+                  ),
+                ],
+              );
+            }
+            if (snapshot.hasData) {
+              List<String> labels = snapshot.data!;
+              String clothingType = labels[0];
+              String color = labels[1];
+              String usage = labels[2];
+              if (labels.isNotEmpty){
+                return StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return AlertDialog(
+                      title: const Text('Change/Confirm Labels'),
+                      content: ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 400, maxWidth: 300),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Image.asset(
+                                imagePath,
+                                fit: BoxFit.cover,
+                                height: 150,
+                                width: 150,
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Clothing Type',
+                                style: TextStyle(
+                                  color: Color(0xFF1B5E20),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              DropdownButton<String>(
+                                value: clothingType,
+                                isExpanded: true,
+                                style: const TextStyle(
+                                  color: Color(0xFF1B5E20),
+                                  fontSize: 14,
+                                ),
+                                items: <String>[
+                                  'Blazers', 'Cardigan', 'Dresses', 'Hoodie', 'Jackets',
+                                  'Jeans', 'Jumpsuit', 'Leggings', 'Lounge Pants', 'Shorts',
+                                  'Skirts', 'Sweaters', 'Tank', 'Tops', 'Trousers', 'Tshirts'
+                                ].map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                    setState(() {
+                                      if (newValue!=null){
+                                        clothingType = newValue;
+                                        updateLabel(imagePath, newValue, 0);
+                                      }
+                                    });
+                                  },
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Color',
+                                style: TextStyle(
+                                  color: Color(0xFF1B5E20),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              DropdownButton<String>(
+                                value: color,
+                                isExpanded: true,
+                                style: const TextStyle(
+                                  color: Color(0xFF1B5E20),
+                                  fontSize: 14,
+                                ),
+                                items: <String>[
+                                  'Beige', 'Black', 'Blue', 'Brown', 'Green', 'Grey',
+                                  'Orange', 'Pink', 'Purple', 'Red', 'White', 'Yellow'
+                                ].map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    if (newValue!=null){
+                                      color = newValue;
+                                      updateLabel(imagePath, newValue, 1);
+                                    }
+                                  });
+                                },
+                              ),
+                              const SizedBox(height: 20),
+                              const Text(
+                                'Usage',
+                                style: TextStyle(
+                                  color: Color(0xFF1B5E20),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              DropdownButton<String>(
+                                value: usage,
+                                isExpanded: true,
+                                style: const TextStyle(
+                                  color: Color(0xFF1B5E20),
+                                  fontSize: 14,
+                                ),
+                                items: <String>['Casual', 'Formal'].map((String value) {
+                                  return DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    if (newValue!=null){
+                                      usage = newValue;
+                                      updateLabel(imagePath, newValue, 2);
+                                    }
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    );
+                  }
+                );
+              }
+              else{
+                return AlertDialog(
+                title: Text(labelsErrorMessage),
+              );
+              }
+            } else {
+              return AlertDialog(
+                title: const Text('No Labels Available'),
+                content: const Text('The labels could not be fetched.'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Close'),
+                  ),
+                ],
+              );
+            }
+          },
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -680,9 +914,14 @@ class ClosetPageState extends State<ClosetPage> {
                   ),
                   itemCount: imagePaths.length,
                   itemBuilder: (context, index) {
-                    return Image.asset(
-                      imagePaths[index],
-                      fit: BoxFit.cover,
+                    return GestureDetector(
+                      onTap: () {
+                        showImagePopup(imagePaths[index]);
+                      },
+                      child: Image.asset(
+                        imagePaths[index],
+                        fit: BoxFit.cover,
+                      ),
                     );
                   },
                 ),
