@@ -502,7 +502,7 @@ Widget build(BuildContext context) {
                     color: Color(0xFF1B5E20),
                     fontSize: 18,
                   ),
-                  items: <String>['casual', 'athletic', 'formal']
+                  items: <String>['casual', 'formal']
                       .map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
