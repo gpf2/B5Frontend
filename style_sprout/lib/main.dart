@@ -216,7 +216,7 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
                           try {
                             http.post(Uri.parse(url));
                           } catch (e) {
-                            dev.log("Error saving outfit");
+                            dev.log(e.toString());
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -502,7 +502,7 @@ Widget build(BuildContext context) {
                     color: Color(0xFF1B5E20),
                     fontSize: 18,
                   ),
-                  items: <String>['casual', 'athletic', 'formal']
+                  items: <String>['casual', 'formal']
                       .map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
@@ -549,9 +549,15 @@ Widget build(BuildContext context) {
                         final String itemId1 = outfitData!["top"]["ItemID"].toString();
                         final String itemId2 = outfitData!["bottom"] != null 
                             ? outfitData!["bottom"]["ItemID"].toString() 
-                            : itemId1; 
+                            : "-1"; 
+                        final String itemId3 = outfitData!["overwear"] != null
+                            ? outfitData!["overwear"]["ItemID"].toString()
+                            : "-1";
+                        final String itemId4 = outfitData!["jacket"] != null
+                            ? outfitData!["jacket"]["ItemID"].toString()
+                            : "-1";
                         final String url =
-                            'http://ipaddress:8000/select/$primary/$secondary/$itemId1/$itemId2';
+                            'http://ipaddress:8000/select/$primary/$secondary/$itemId1/$itemId2/$itemId3/$itemId4';
                         try {
                           http.post(Uri.parse(url));
                         } catch (e) {
