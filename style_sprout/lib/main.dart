@@ -670,7 +670,6 @@ class ClosetPageState extends State<ClosetPage> {
         });
       }
     } catch (e) {
-      dev.log(e.toString());
       setState(() {
         labels = [];
         labelsErrorMessage = e.toString();
@@ -730,7 +729,7 @@ class ClosetPageState extends State<ClosetPage> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Image.asset(
+                              Image.network(
                                 imagePath,
                                 fit: BoxFit.cover,
                                 height: 150,
@@ -948,7 +947,7 @@ class ClosetPageState extends State<ClosetPage> {
                       onTap: () {
                         showImagePopup(imagePaths[index], imageIDs[index]);
                       },
-                      child: Image.asset(
+                      child: Image.network(
                         imagePaths[index],
                         fit: BoxFit.cover,
                       ),
