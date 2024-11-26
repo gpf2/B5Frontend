@@ -601,6 +601,7 @@ class ClosetPage extends StatefulWidget {
 class ClosetPageState extends State<ClosetPage> {
   int currentPage = 0;
   List<String> imagePaths = [];
+  List<String> imageIDs = [];
   bool lastPage = false;
   String closetErrorMessage = '';
   String labelsErrorMessage = '';
@@ -616,12 +617,14 @@ class ClosetPageState extends State<ClosetPage> {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         setState(() {
           imagePaths = List<String>.from(data['urls']);
+          imageIDs = List<String>.from(data['ids']);
           lastPage = data['last_page'] as bool;
           closetErrorMessage = '';
         });
       } else {
         setState(() {
           imagePaths = [];
+          imageIDs = [];
           currentPage = 0;
           int statusCode = response.statusCode;
           closetErrorMessage = 'HTTP error encountered: $statusCode';
@@ -631,15 +634,15 @@ class ClosetPageState extends State<ClosetPage> {
       dev.log(e.toString());
       setState(() {
         imagePaths = [];
+        imageIDs = [];
         currentPage = 0;
         closetErrorMessage = e.toString();
       });
     }
   }
 
-  Future<void> updateLabel(String path, String newLabel, int type) async {
-    String newpath =path.replaceAll('/', '*');
-    final String url = 'http://ipaddress:8000/label_update/$newpath/$type/$newLabel';
+  Future<void> updateLabel(String id, String usage, String color, int num_uses, String item_type) async {
+    final String url = 'http://ipaddress:8000/update/$id/$usage/$color/$num_uses/$item_type';
     try {
       http.post(Uri.parse(url));
     } catch (e) {
@@ -647,9 +650,8 @@ class ClosetPageState extends State<ClosetPage> {
     }
   }
 
-  Future<List<String>> getLabels(String path) async {
-    String newpath =path.replaceAll('/', '*');
-    final String url = 'http://ipaddress:8000/image_labels/$newpath';
+  Future<List<String>> getLabels(String id) async {
+    final String url = 'http://ipaddress:8000/image_labels/$id';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -683,12 +685,12 @@ class ClosetPageState extends State<ClosetPage> {
     fetchImagePaths(currentPage);
   }
 
-  void showImagePopup(String imagePath) {
+  void showImagePopup(String imagePath, String id) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return FutureBuilder<List<String>>(
-          future: getLabels(imagePath),
+          future: getLabels(id),
           builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const AlertDialog(
@@ -712,9 +714,10 @@ class ClosetPageState extends State<ClosetPage> {
             }
             if (snapshot.hasData) {
               List<String> labels = snapshot.data!;
-              String clothingType = labels[0];
-              String color = labels[1];
+              String color = labels[0];
+              String clothingType = labels[1];
               String usage = labels[2];
+              int numUses = int.parse(labels[3]);
               if (labels.isNotEmpty){
                 return StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
@@ -763,7 +766,6 @@ class ClosetPageState extends State<ClosetPage> {
                                     setState(() {
                                       if (newValue!=null){
                                         clothingType = newValue;
-                                        updateLabel(imagePath, newValue, 0);
                                       }
                                     });
                                   },
@@ -797,7 +799,6 @@ class ClosetPageState extends State<ClosetPage> {
                                   setState(() {
                                     if (newValue!=null){
                                       color = newValue;
-                                      updateLabel(imagePath, newValue, 1);
                                     }
                                   });
                                 },
@@ -828,10 +829,31 @@ class ClosetPageState extends State<ClosetPage> {
                                   setState(() {
                                     if (newValue!=null){
                                       usage = newValue;
-                                      updateLabel(imagePath, newValue, 2);
                                     }
                                   });
                                 },
+                              ),
+                              TextField(
+                                decoration:  InputDecoration(
+                                  labelText: 'Current Uses: $numUses',
+                                  labelStyle: TextStyle(
+                                  color: Color(0xFF1B5E20),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                  ),
+                                keyboardType: TextInputType.number,
+                                inputFormatters: <TextInputFormatter>[
+                                  FilteringTextInputFormatter.digitsOnly
+                                ], // Only numbers can be entered
+                                onChanged: (String? newValue) {
+                                  if (newValue != null && newValue.isNotEmpty) {
+                                    int temp = int.parse(newValue);
+                                    if (temp>0 || temp<=100){
+                                      numUses = temp;
+                                    }
+                                  }
+                                }
                               ),
                             ],
                           ),
@@ -841,8 +863,10 @@ class ClosetPageState extends State<ClosetPage> {
                         TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
+                            updateLabel(id, usage, color, 
+                              numUses, clothingType);
                           },
-                          child: const Text('Close'),
+                          child: const Text('Submit'),
                         ),
                       ],
                     );
@@ -922,7 +946,7 @@ class ClosetPageState extends State<ClosetPage> {
                   itemBuilder: (context, index) {
                     return GestureDetector(
                       onTap: () {
-                        showImagePopup(imagePaths[index]);
+                        showImagePopup(imagePaths[index], imageIDs[index]);
                       },
                       child: Image.asset(
                         imagePaths[index],
