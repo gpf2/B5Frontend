@@ -290,7 +290,7 @@ class GenerateOutfitPage extends StatefulWidget {
 }
 
 class GenerateOutfitPageState extends State<GenerateOutfitPage> {
-  String selectedOutfitType = 'casual';
+  String selectedOutfitType = 'Casual';
   String generatedOutfit = 'Generated outfit will appear here';
   String? topImageUrl;
   String? bottomImageUrl;
@@ -502,7 +502,7 @@ Widget build(BuildContext context) {
                     color: Color(0xFF1B5E20),
                     fontSize: 18,
                   ),
-                  items: <String>['casual', 'formal']
+                  items: <String>['Casual', 'Formal']
                       .map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
