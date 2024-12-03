@@ -29,10 +29,142 @@ class StyleSproutHome extends StatefulWidget {
 
 class StyleSproutHomeState extends State<StyleSproutHome> {
   String outfitResult = 'Style Sprout'; 
+  bool? hasAcceptedPrivacyNotice;
+
+  @override
+  void initState() {
+    super.initState();
+    checkPrivacyNotice();
+  }
+
+  Future<void> checkPrivacyNotice() async {
+    final String url = 'http://ipaddress:8000/privacy_notice/';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final result = jsonDecode(response.body);
+        setState(() {
+          hasAcceptedPrivacyNotice = result == 1;
+        });
+        if (!hasAcceptedPrivacyNotice!) {
+          showPrivacyNoticePopup();
+        }
+      } else {
+        dev.log("Failed to fetch privacy notice status.");
+      }
+    } catch (e) {
+      dev.log("Error fetching privacy notice status: $e");
+    }
+  }
+
+  Future<void> acceptPrivacyNotice() async {
+    final String url = 'http://ipaddress:8000/privacy_notice/accept';
+    try {
+      final response = await http.post(Uri.parse(url));
+      if (response.statusCode == 200) {
+        setState(() {
+          hasAcceptedPrivacyNotice = true;
+        });
+        Navigator.pop(context); // close popup
+      } else {
+        dev.log("Failed to accept privacy notice.");
+      }
+    } catch (e) {
+      dev.log("Error accepting privacy notice: $e");
+    }
+  }
+
+   void showPrivacyNoticePopup() {
+    bool hasAccepted = false;
+    String errorMessage = '';
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter dialogSetState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+                side: const BorderSide(color: Colors.green, width: 2),
+              ),
+              title: const Text(
+                'Privacy Notice',
+                style: TextStyle(
+                  color: Color(0xFF1B5E20),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "This application will save images of clothing you scan. "
+                    "These images are private to your account and will not be shared. "
+                    "They will only be used for generating outfits and displaying your closet.",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: hasAccepted,
+                        onChanged: (bool? value) {
+                          dialogSetState(() {
+                            hasAccepted = value ?? false;
+                          });
+                        },
+                      ),
+                      const Expanded(
+                        child: Text(
+                          "I accept these terms.",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (errorMessage.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        errorMessage,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    if (hasAccepted) {
+                      acceptPrivacyNotice();
+                    } else {
+                      dialogSetState(() {
+                        errorMessage = "You must accept the terms before using the application.";
+                      });
+                    }
+                  },
+                  child: const Text(
+                    "Submit",
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
 
   void showSettingsMenu(BuildContext context) {
     const String laundryMessage = "Uses Before Dirty (1 to 100)";
-    const String locationMessage = "Select or Enter a Location";
+    const String locationMessage = "Enter a Location";
     String errorMessage = "";
     int value = 1;
     String selectedLocation = "Pittsburgh"; // default
@@ -143,6 +275,12 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
 
   @override
   Widget build(BuildContext context) {
+    if (hasAcceptedPrivacyNotice == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
     Size screenSize = MediaQuery.of(context).size;
     double displayWidthInPixels = screenSize.width * devicePixelRatio;

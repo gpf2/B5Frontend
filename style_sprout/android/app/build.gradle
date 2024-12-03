@@ -28,6 +28,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Enable multidex
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -37,6 +39,10 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+}
+
+dependencies {
+    implementation 'androidx.multidex:multidex:2.0.1'
 }
 
 flutter {
