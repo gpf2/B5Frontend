@@ -514,6 +514,25 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
     }
   }
 
+  Future<void> dislikeOutfitAndRegenerate() async {
+    final String itemId1 = outfitData!["top"]["ItemID"].toString();
+    final String itemId2 = outfitData!["bottom"] != null
+        ? outfitData!["bottom"]["ItemID"].toString()
+        : "-1";
+
+    final String url = 'http://ipaddress:8000/dislike/$itemId1/$itemId2';
+
+    try {
+      await http.post(Uri.parse(url));
+      dev.log("Dislike successful");
+    } catch (e) {
+      dev.log("Error disliking: $e");
+    }
+
+    // Generate new outfit after disliking current one
+    generateOutfit(selectedOutfitType);
+  }
+
 @override
 Widget build(BuildContext context) {
   double devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
@@ -755,6 +774,19 @@ Widget build(BuildContext context) {
                         ),
                       ),
                     ),
+                    ElevatedButton(
+                        onPressed: dislikeOutfitAndRegenerate,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 20),
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Icon(
+                          Icons.thumb_down,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
                   ],
                 ),
               ],
