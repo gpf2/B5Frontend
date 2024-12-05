@@ -1075,6 +1075,17 @@ class ClosetPageState extends State<ClosetPage> {
                           },
                           child: const Text('Submit'),
                         ),
+                        TextButton(
+                        onPressed: () async {
+                          await deleteItem(id);
+                          Navigator.of(context).pop();
+                          fetchImagePaths(currentPage);
+                        },
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.red,
+                        ),
+                        child: const Text('Delete'),
+                      ),
                       ],
                     );
                   }
@@ -1105,6 +1116,14 @@ class ClosetPageState extends State<ClosetPage> {
     );
   }
 
+  Future<void> deleteItem(String id) async {
+    final String url = 'http://ipaddress:8000/delete/$id';
+    try {
+      await http.post(Uri.parse(url));
+    } catch (e) {
+      dev.log("Error deleting item: $id");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
