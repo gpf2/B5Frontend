@@ -1056,7 +1056,7 @@ class ClosetPageState extends State<ClosetPage> {
                                 onChanged: (String? newValue) {
                                   if (newValue != null && newValue.isNotEmpty) {
                                     int temp = int.parse(newValue);
-                                    if (temp>=0 || temp<=100){
+                                    if (temp>0 || temp<=100){
                                       numUses = temp;
                                     }
                                   }
