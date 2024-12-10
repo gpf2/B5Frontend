@@ -474,6 +474,7 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
   String? overwearImageUrl;
   Map<String, dynamic>? outfitData;
   int divisionAmount = 12;
+  String errorMessage = "";
 
   Future<void> generateOutfit(String usage) async {
     final String url = 'http://ipaddress:8000/outfit/$usage';
@@ -492,9 +493,9 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
           outfitData = data;
         });
       } else {
+        errorMessage = "Failed to generate outfit. ${response.statusCode}";
         setState(() {
-          generatedOutfit =
-              "Failed to fetch outfit. Status code: ${response.statusCode}";
+          errorMessage = "Failed to generate outfit. ${jsonDecode(response.body)["detail"]}.";
           topImageUrl = null;
           bottomImageUrl = null;
           jacketImageUrl = null;
@@ -504,6 +505,7 @@ class GenerateOutfitPageState extends State<GenerateOutfitPage> {
       }
     } catch (e) {
       setState(() {
+        errorMessage = "Failed to generate outfit. ${e.toString()}";
         generatedOutfit = "generated $usage outfit";
         topImageUrl = null;
         bottomImageUrl = null;
@@ -583,6 +585,19 @@ Widget build(BuildContext context) {
     body: SafeArea(
       child: Column(
         children: [
+          if (errorMessage.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                errorMessage,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ), 
+                textAlign: TextAlign.center,
+              ),
+            ),
           // Display generated outfit
           Expanded(
             child: Center(
