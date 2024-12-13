@@ -166,8 +166,8 @@ class StyleSproutHomeState extends State<StyleSproutHome> {
     const String laundryMessage = "Uses Before Dirty (1 to 100)";
     const String locationMessage = "Enter a Location";
     String errorMessage = "";
-    int value = 1;
-    String selectedLocation = "Pittsburgh"; // default
+    int value = -1;
+    String selectedLocation = "-1"; // default
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -549,6 +549,7 @@ Widget build(BuildContext context) {
     bottomImageUrl
   ].where((image) => image != null && image != "none").toList();
 
+  dev.log("urls: jacket- $jacketImageUrl overwear-  $overwearImageUrl  top- $topImageUrl  bottom - $bottomImageUrl");
   // Get division amount based on # of valid images
   int imageCount = validImages.length;
   if (imageCount == 2) {
