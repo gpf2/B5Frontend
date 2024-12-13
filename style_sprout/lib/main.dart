@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart'; 
 import 'dart:convert';
 import 'dart:developer' as dev;
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 void main() {
   runApp(const StyleSproutApp());
@@ -616,8 +618,14 @@ Widget build(BuildContext context) {
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 2),
-                                  child: Image.network(
-                                    jacketImageUrl!,
+                                  child: CachedNetworkImage(
+                                    imageUrl: jacketImageUrl!,
+                                    placeholder: (context, url) => Center(
+                                      child: SpinKitFadingCircle(
+                                        color: Colors.green,
+                                        size: 50.0,
+                                      ),
+                                    ),
                                     height: displayHeightInPixels / divisionAmount,
                                   ),
                                 ),
@@ -626,8 +634,14 @@ Widget build(BuildContext context) {
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 2),
-                                  child: Image.network(
-                                    overwearImageUrl!,
+                                  child: CachedNetworkImage(
+                                    imageUrl: overwearImageUrl!,
+                                    placeholder: (context, url) => Center(
+                                      child: SpinKitFadingCircle(
+                                        color: Colors.green,
+                                        size: 50.0,
+                                      ),
+                                    ),
                                     height: displayHeightInPixels / divisionAmount,
                                   ),
                                 ),
@@ -640,8 +654,14 @@ Widget build(BuildContext context) {
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 2),
-                                  child: Image.network(
-                                    topImageUrl!,
+                                  child: CachedNetworkImage(
+                                    imageUrl:  topImageUrl!,
+                                    placeholder: (context, url) => Center(
+                                      child: SpinKitFadingCircle(
+                                        color: Colors.green,
+                                        size: 50.0,
+                                      ),
+                                    ),
                                     height: displayHeightInPixels / divisionAmount,
                                   ),
                                 ),
@@ -650,8 +670,14 @@ Widget build(BuildContext context) {
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 2),
-                                  child: Image.network(
-                                    bottomImageUrl!,
+                                  child: CachedNetworkImage(
+                                    imageUrl: bottomImageUrl!,
+                                    placeholder: (context, url) => Center(
+                                      child: SpinKitFadingCircle(
+                                        color: Colors.green,
+                                        size: 50.0,
+                                      ),
+                                    ),
                                     height: displayHeightInPixels / divisionAmount,
                                   ),
                                 ),
@@ -665,8 +691,14 @@ Widget build(BuildContext context) {
                           if (jacketImageUrl != null && jacketImageUrl != "none")
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Image.network(
-                                jacketImageUrl!,
+                              child: CachedNetworkImage(
+                                imageUrl: jacketImageUrl!,
+                                placeholder: (context, url) => Center(
+                                      child: SpinKitFadingCircle(
+                                        color: Colors.green,
+                                        size: 50.0,
+                                      ),
+                                    ),
                                 height: displayHeightInPixels / divisionAmount,
                               ),
                             ),
@@ -674,24 +706,42 @@ Widget build(BuildContext context) {
                               overwearImageUrl != "none")
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Image.network(
-                                overwearImageUrl!,
+                              child: CachedNetworkImage(
+                                imageUrl: overwearImageUrl!,
+                                placeholder: (context, url) => Center(
+                                      child: SpinKitFadingCircle(
+                                        color: Colors.green,
+                                        size: 50.0,
+                                      ),
+                                    ),
                                 height: displayHeightInPixels / divisionAmount,
                               ),
                             ),
                           if (topImageUrl != null && topImageUrl != "none")
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Image.network(
-                                topImageUrl!,
+                              child: CachedNetworkImage(
+                                imageUrl: topImageUrl!,
+                                placeholder: (context, url) => Center(
+                                      child: SpinKitFadingCircle(
+                                        color: Colors.green,
+                                        size: 50.0,
+                                      ),
+                                    ),
                                 height: displayHeightInPixels / divisionAmount,
                               ),
                             ),
                           if (bottomImageUrl != null && bottomImageUrl != "none")
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Image.network(
-                                bottomImageUrl!,
+                              child: CachedNetworkImage(
+                                imageUrl: bottomImageUrl!,
+                                placeholder: (context, url) => Center(
+                                      child: SpinKitFadingCircle(
+                                        color: Colors.green,
+                                        size: 50.0,
+                                      ),
+                                    ),
                                 height: displayHeightInPixels / divisionAmount,
                               ),
                             ),
@@ -953,11 +1003,17 @@ class ClosetPageState extends State<ClosetPage> {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Image.network(
-                                imagePath,
+                              CachedNetworkImage(
+                                imageUrl: imagePath,
                                 fit: BoxFit.cover,
                                 height: 150,
                                 width: 150,
+                                placeholder: (context, url) => Center(
+                                      child: SpinKitFadingCircle(
+                                        color: Colors.green,
+                                        size: 50.0,
+                                      ),
+                                    ),
                               ),
                               const SizedBox(height: 20),
                               const Text(
@@ -1190,9 +1246,15 @@ class ClosetPageState extends State<ClosetPage> {
                       onTap: () {
                         showImagePopup(imagePaths[index], imageIDs[index]);
                       },
-                      child: Image.network(
-                        imagePaths[index],
+                      child: CachedNetworkImage(
+                        imageUrl: imagePaths[index],
                         fit: BoxFit.cover,
+                        placeholder: (context, url) => Center(
+                                      child: SpinKitFadingCircle(
+                                        color: Colors.green,
+                                        size: 50.0,
+                                      ),
+                                    ),
                       ),
                     );
                   },
